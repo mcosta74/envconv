@@ -14,7 +14,7 @@ var (
 )
 
 func main() {
-    flag.TextVar(&logLevel, "log.level", envconv.GetSlogLevel("APP_LOG_LEVEL", slog.LevelInfo), "application log level")
+    flag.TextVar(&logLevel, "log.level", envconv.GetTextUnmarshaler("APP_LOG_LEVEL", slog.LevelInfo), "application log level")
     flag.TextVar(&timeout, "timeout", envconv.GetDuration("APP_TIMEOUT", 30*time.Second), "application timeout")
     ...
 }

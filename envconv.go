@@ -2,6 +2,7 @@
 package envconv
 
 import (
+	"encoding"
 	"log/slog"
 	"os"
 	"strconv"
@@ -71,15 +72,36 @@ func GetString(name, defaultValue string) string {
 //
 // The conversion follows [slog.Level.UnmarshalText] rules. If the variable is not set or cannot be
 // converted to a slog.Level, it returns the provided defaultValue.
+//
+// Deprecated: use GetTextUnmarshaler instead.
 func GetSlogLevel(name string, defaultValue slog.Level) slog.Level {
+	return GetTextUnmarshaler(name, defaultValue)
+}
+
+// GetTextUnmarshaler retrieves a value of type T that implements encoding.TextUnmarshaler
+// from the environment variable named by the key.
+//
+// If the variable is not set or cannot be converted, it returns the provided defaultValue.
+// The type TPtr is a pointer to T that implements encoding.TextUnmarshaler.
+//
+// Example usage:
+//
+//	var slogLevel slog.Level = envconv.GetTextUnmarshaler("MY_LOG_LEVEL", slog.LevelInfo)
+//	var netIP net.IP = envconv.GetTextUnmarshaler("MY_IP", net.IPv4(192.168, 0, 1))
+func GetTextUnmarshaler[T any, TPtr interface {
+	*T
+	encoding.TextUnmarshaler
+}](name string, defaultValue T) T {
 	val, found := os.LookupEnv(name)
 	if !found {
 		return defaultValue
 	}
 
-	var lvl slog.Level
-	if err := lvl.UnmarshalText([]byte(val)); err != nil {
+	var result T
+	ptr := TPtr(&result)
+
+	if err := ptr.UnmarshalText([]byte(val)); err != nil {
 		return defaultValue
 	}
-	return lvl
+	return result
 }
