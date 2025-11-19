@@ -1,5 +1,6 @@
 # envconv
-[![Go Reference](https://pkg.go.dev/badge/mcosta74/envconv.svg)](https://pkg.go.dev/mcosta74/envconv)
+![CI Test](https://github.com/mcosta74/envconv/actions/workflows/test.yml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/mcosta74/envconv.svg)](https://pkg.go.dev/github.com/mcosta74/envconv)
 
 Utility functions to parse environment variables
 
