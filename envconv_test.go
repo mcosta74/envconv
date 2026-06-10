@@ -3,7 +3,6 @@ package envconv_test
 import (
 	"log/slog"
 	"net"
-	"os"
 	"testing"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 )
 
 func TestGetBool(t *testing.T) {
-	envName := "TEST_ENV_INT"
+	envName := "TEST_ENV_BOOL"
 
 	type args struct {
 		isSet        bool
@@ -35,13 +34,10 @@ func TestGetBool(t *testing.T) {
 		{"Valid_FALSE", args{true, "FALSE", true}, false},
 	}
 	for _, tt := range tests {
-		if tt.args.isSet {
-			os.Setenv(envName, tt.args.envValue)
-			defer os.Unsetenv(envName)
-		} else {
-			os.Unsetenv(envName)
-		}
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.isSet {
+				t.Setenv(envName, tt.args.envValue)
+			}
 			if got := envconv.GetBool(envName, tt.args.defaultValue); got != tt.want {
 				t.Errorf("GetBool() = %v, want %v", got, tt.want)
 			}
@@ -69,10 +65,7 @@ func TestGetInt(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.isSet {
-				os.Setenv(envName, tt.args.envValue)
-				defer os.Unsetenv(envName)
-			} else {
-				os.Unsetenv(envName)
+				t.Setenv(envName, tt.args.envValue)
 			}
 			if got := envconv.GetInt(envName, tt.args.defaultValue); got != tt.want {
 				t.Errorf("GetInt() = %v, want %v", got, tt.want)
@@ -101,10 +94,7 @@ func TestGetDuration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.isSet {
-				os.Setenv(envName, tt.args.envValue)
-				defer os.Unsetenv(envName)
-			} else {
-				os.Unsetenv(envName)
+				t.Setenv(envName, tt.args.envValue)
 			}
 			if got := envconv.GetDuration(envName, tt.args.defaultValue); got != tt.want {
 				t.Errorf("GetDuration() = %v, want %v", got, tt.want)
@@ -130,15 +120,43 @@ func TestGetString(t *testing.T) {
 		{"EnvSet", args{true, "HI", "HELLO"}, "HI"},
 	}
 	for _, tt := range tests {
-		if tt.args.isSet {
-			os.Setenv(envName, tt.args.envValue)
-			defer os.Unsetenv(envName)
-		} else {
-			os.Unsetenv(envName)
-		}
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.isSet {
+				t.Setenv(envName, tt.args.envValue)
+			}
 			if got := envconv.GetString(envName, tt.args.defaultValue); got != tt.want {
-				t.Errorf("GetInt() = %v, want %v", got, tt.want)
+				t.Errorf("GetString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetFloat64(t *testing.T) {
+	envName := "TEST_ENV_FLOAT64"
+
+	type args struct {
+		isSet        bool
+		envValue     string
+		defaultValue float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"MissingEnv", args{false, "", 3.14}, 3.14},
+		{"InvalidFloat", args{true, "aabbcc", 3.14}, 3.14},
+		{"ValidFloat", args{true, "2.718", 3.14}, 2.718},
+		{"ValidInt", args{true, "42", 3.14}, 42.0},
+		{"ValidNegative", args{true, "-1.5", 3.14}, -1.5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.isSet {
+				t.Setenv(envName, tt.args.envValue)
+			}
+			if got := envconv.GetFloat64(envName, tt.args.defaultValue); got != tt.want {
+				t.Errorf("GetFloat64() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -167,10 +185,7 @@ func TestGetSlogLevel(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.isSet {
-				os.Setenv(envName, tt.args.envValue)
-				defer os.Unsetenv(envName)
-			} else {
-				os.Unsetenv(envName)
+				t.Setenv(envName, tt.args.envValue)
 			}
 			if got := envconv.GetSlogLevel(envName, tt.args.defaultValue); got != tt.want {
 				t.Errorf("GetSlogLevel() = %v, want %v", got, tt.want)
@@ -204,10 +219,7 @@ func TestGetTextUnmarshaler(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				if tt.args.isSet {
-					os.Setenv(envName, tt.args.envValue)
-					defer os.Unsetenv(envName)
-				} else {
-					os.Unsetenv(envName)
+					t.Setenv(envName, tt.args.envValue)
 				}
 				if got := envconv.GetTextUnmarshaler(envName, tt.args.defaultValue); got != tt.want {
 					t.Errorf("GetTextUnmarshaler() = %v, want %v", got, tt.want)
@@ -237,10 +249,7 @@ func TestGetTextUnmarshaler(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				if tt.args.isSet {
-					os.Setenv(envName, tt.args.envValue)
-					defer os.Unsetenv(envName)
-				} else {
-					os.Unsetenv(envName)
+					t.Setenv(envName, tt.args.envValue)
 				}
 				if got := envconv.GetTextUnmarshaler(envName, tt.args.defaultValue); !got.Equal(tt.want) {
 					t.Errorf("GetTextUnmarshaler() = %v, want %v", got, tt.want)
@@ -270,10 +279,7 @@ func TestGetTextUnmarshaler(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				if tt.args.isSet {
-					os.Setenv(envName, tt.args.envValue)
-					defer os.Unsetenv(envName)
-				} else {
-					os.Unsetenv(envName)
+					t.Setenv(envName, tt.args.envValue)
 				}
 				if got := envconv.GetTextUnmarshaler(envName, tt.args.defaultValue); got.val != tt.want.val {
 					t.Errorf("GetTextUnmarshaler() = %v, want %v", got.val, tt.want.val)

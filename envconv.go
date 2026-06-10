@@ -9,6 +9,22 @@ import (
 	"time"
 )
 
+// GetFloat64 retrieves the float64 value of the environment variable named by the key.
+//
+// The conversion follows [strconv.ParseFloat] rules. If the variable is not set or cannot be
+// converted to a float64, it returns the provided defaultValue.
+func GetFloat64(name string, defaultValue float64) float64 {
+	val, found := os.LookupEnv(name)
+	if !found {
+		return defaultValue
+	}
+
+	if floatValue, err := strconv.ParseFloat(val, 64); err == nil {
+		return floatValue
+	}
+	return defaultValue
+}
+
 // GetBool retrieves the boolean value of the environment variable named by the key.
 //
 // The conversion follows [strconv.ParseBool] rules. If the variable is not set or cannot be
@@ -87,7 +103,7 @@ func GetSlogLevel(name string, defaultValue slog.Level) slog.Level {
 // Example usage:
 //
 //	var slogLevel slog.Level = envconv.GetTextUnmarshaler("MY_LOG_LEVEL", slog.LevelInfo)
-//	var netIP net.IP = envconv.GetTextUnmarshaler("MY_IP", net.IPv4(192.168, 0, 1))
+//	var netIP net.IP = envconv.GetTextUnmarshaler("MY_IP", net.IPv4(192, 168, 0, 1))
 func GetTextUnmarshaler[T any, TPtr interface {
 	*T
 	encoding.TextUnmarshaler
